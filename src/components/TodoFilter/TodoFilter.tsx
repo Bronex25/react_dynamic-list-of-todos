@@ -4,6 +4,7 @@ type Props = {
   handleInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   handleOptionChange: (event: React.ChangeEvent<HTMLSelectElement>) => void;
   onResetInput: () => void;
+  option: string;
   query: string;
 };
 
@@ -11,13 +12,18 @@ export const TodoFilter: React.FC<Props> = ({
   handleInputChange,
   handleOptionChange,
   onResetInput,
+  option,
   query,
 }) => {
   return (
     <form className="field has-addons">
       <p className="control">
         <span className="select">
-          <select data-cy="statusSelect" onChange={handleOptionChange}>
+          <select
+            data-cy="statusSelect"
+            value={option}
+            onChange={handleOptionChange}
+          >
             <option value="all">All</option>
             <option value="active">Active</option>
             <option value="completed">Completed</option>
@@ -41,7 +47,7 @@ export const TodoFilter: React.FC<Props> = ({
         <span className="icon is-right" style={{ pointerEvents: 'all' }}>
           {query !== '' && (
             <button
-              onClick={() => onResetInput()}
+              onClick={onResetInput}
               data-cy="clearSearchButton"
               type="button"
               className="delete"

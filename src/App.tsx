@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import 'bulma/css/bulma.css';
 import '@fortawesome/fontawesome-free/css/all.css';
 
@@ -12,39 +12,37 @@ import { Todo } from './types/Todo';
 
 export const App: React.FC = () => {
   const [todoList, setTodoList] = useState<Todo[]>([]);
-  const [filteredTodoList, setFilteredTodoList] = useState<Todo[]>([]);
   const [activeTodo, setActiveTodo] = useState<Todo | null>(null);
-  const [option, setOption] = useState('');
+  const [option, setOption] = useState('all');
   const [query, setQuery] = useState('');
   const [activeLoader, setActiveLoader] = useState(true);
 
   useEffect(() => {
-    getTodos().then(todos => {
-      setTodoList(todos);
-      setFilteredTodoList(todos);
-      setActiveLoader(false);
-    });
+    getTodos()
+      .then(todos => {
+        setTodoList(todos);
+        setActiveLoader(false);
+      })
+      // eslint-disable-next-line no-console
+      .catch(error => console.error('Failed to fetch todos:', error));
   }, []);
 
-  useEffect(() => {
-    setFilteredTodoList(() => {
-      return todoList.filter(todo => {
-        const titleToCheck = todo.title.toLowerCase().trim();
-        const queryToCheck = query.trim().toLowerCase();
-        const result =
-          titleToCheck.includes(queryToCheck) || queryToCheck === '';
+  const filteredTodo = useMemo(() => {
+    return todoList.filter(todo => {
+      const titleToCheck = todo.title.toLowerCase().trim();
+      const queryToCheck = query.trim().toLowerCase();
+      const result = titleToCheck.includes(queryToCheck) || queryToCheck === '';
 
-        switch (option) {
-          case 'active':
-            return !todo.completed && result;
-          case 'completed':
-            return todo.completed && result;
-          default:
-            return result;
-        }
-      });
+      switch (option) {
+        case 'active':
+          return !todo.completed && result;
+        case 'completed':
+          return todo.completed && result;
+        default:
+          return result;
+      }
     });
-  }, [todoList, query, option]);
+  }, [option, query, todoList]);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(event.target.value);
@@ -77,6 +75,7 @@ export const App: React.FC = () => {
               <TodoFilter
                 handleInputChange={handleInputChange}
                 handleOptionChange={handleOptionChange}
+                option={option}
                 onResetInput={onResetInput}
                 query={query}
               />
@@ -85,7 +84,7 @@ export const App: React.FC = () => {
             <div className="block">
               {activeLoader && <Loader />}
               <TodoList
-                todos={filteredTodoList}
+                todos={filteredTodo}
                 handleShowTodo={handleShowTodo}
                 activeTodo={activeTodo}
               />

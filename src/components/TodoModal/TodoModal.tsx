@@ -14,9 +14,19 @@ export const TodoModal: React.FC<Props> = React.memo(
     const [user, setUser] = useState<User | null>(null);
 
     useEffect(() => {
+      let isCancelled = false;
+
       if (activeTodo) {
-        getUser(activeTodo.userId).then(setUser);
+        getUser(activeTodo.userId).then(userData => {
+          if (!isCancelled) {
+            setUser(userData);
+          }
+        });
       }
+
+      return () => {
+        isCancelled = true;
+      };
     }, [activeTodo]);
 
     const handleCloseModal = () => {
